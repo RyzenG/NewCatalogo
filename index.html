@@ -260,7 +260,19 @@
         function loadProducts() {
             const saved = localStorage.getItem('amazoniaProducts');
             if (saved) {
-                products = JSON.parse(saved);
+                try {
+                    const parsed = JSON.parse(saved);
+                    if (Array.isArray(parsed)) {
+                        products = parsed;
+                    }
+                } catch (error) {
+                    console.warn('No se pudieron cargar los productos almacenados:', error);
+                }
+            }
+
+            if (!products.length) {
+                nextId = 1;
+            } else {
                 nextId = Math.max(...products.map(p => p.id)) + 1;
             }
         }
@@ -300,13 +312,23 @@
                 'decoracion': 'Decoración'
             };
 
-            document.getElementById('categoryFilters').innerHTML = categories.map(cat => `
-                <button onclick="filterByCategory('${cat}')" class="category-btn px-6 py-2 rounded-full transition ${
-                    cat === 'todos' ? 'bg-emerald-600 text-white shadow-lg' : 'bg-white text-gray-700 hover:bg-emerald-50'
-                }">
-                    ${categoryNames[cat] || cat}
-                </button>
-            `).join('');
+            if (!categories.includes(currentCategory)) {
+                currentCategory = 'todos';
+            }
+
+            const baseClasses = 'category-btn px-6 py-2 rounded-full transition';
+            document.getElementById('categoryFilters').innerHTML = categories.map(cat => {
+                const isActive = cat === currentCategory;
+                const stateClasses = isActive
+                    ? ' bg-emerald-600 text-white shadow-lg'
+                    : ' bg-white text-gray-700 hover:bg-emerald-50';
+
+                return `
+                    <button onclick="filterByCategory(event, '${cat}')" class="${baseClasses}${stateClasses}">
+                        ${categoryNames[cat] || cat}
+                    </button>
+                `;
+            }).join('');
         }
 
         // Render products in catalog
@@ -455,12 +477,14 @@
         }
 
         // Filter functions
-        function filterByCategory(category) {
+        function filterByCategory(evt, category) {
             currentCategory = category;
             document.querySelectorAll('.category-btn').forEach(btn => {
                 btn.className = 'category-btn px-6 py-2 rounded-full transition bg-white text-gray-700 hover:bg-emerald-50';
             });
-            event.target.className = 'category-btn px-6 py-2 rounded-full transition bg-emerald-600 text-white shadow-lg';
+            if (evt && evt.currentTarget) {
+                evt.currentTarget.className = 'category-btn px-6 py-2 rounded-full transition bg-emerald-600 text-white shadow-lg';
+            }
             renderProducts();
         }
 
@@ -691,23 +715,36 @@
         let cart = [];
         let currentCategory = 'todos';
 
-        function renderCategoryFilters() {
-            const categories = ['todos', ...new Set(products.map(p => p.category))];
-            const categoryNames = {
-                'todos': 'Todos',
-                'macetas': 'Macetas',
-                'mini': 'Mini Macetas',
-                'velas': 'Porta Velas',
-                'bandejas': 'Bandejas',
-                'jarrones': 'Jarrones',
-                'decoracion': 'Decoración'
-            };
-            document.getElementById('categoryFilters').innerHTML = categories.map(cat => \`
-                <button onclick="filterByCategory('\${cat}')" class="category-btn px-6 py-2 rounded-full transition \${cat === 'todos' ? 'bg-emerald-600 text-white shadow-lg' : 'bg-white text-gray-700 hover:bg-emerald-50'}">
-                    \${categoryNames[cat] || cat}
-                </button>
-            \`).join('');
-        }
+          function renderCategoryFilters() {
+              const categories = ['todos', ...new Set(products.map(p => p.category))];
+              const categoryNames = {
+                  'todos': 'Todos',
+                  'macetas': 'Macetas',
+                  'mini': 'Mini Macetas',
+                  'velas': 'Porta Velas',
+                  'bandejas': 'Bandejas',
+                  'jarrones': 'Jarrones',
+                  'decoracion': 'Decoración'
+              };
+
+              if (!categories.includes(currentCategory)) {
+                  currentCategory = 'todos';
+              }
+
+              const baseClasses = 'category-btn px-6 py-2 rounded-full transition';
+              document.getElementById('categoryFilters').innerHTML = categories.map(cat => {
+                  const isActive = cat === currentCategory;
+                  const stateClasses = isActive
+                      ? ' bg-emerald-600 text-white shadow-lg'
+                      : ' bg-white text-gray-700 hover:bg-emerald-50';
+
+                  return \`
+                      <button onclick="filterByCategory(event, '\${cat}')" class="\${baseClasses}\${stateClasses}">
+                          \${categoryNames[cat] || cat}
+                      </button>
+                  \`;
+              }).join('');
+          }
 
         function renderProducts() {
             const grid = document.getElementById('productsGrid');
@@ -742,14 +779,16 @@
             }
         }
 
-        function filterByCategory(category) {
-            currentCategory = category;
-            document.querySelectorAll('.category-btn').forEach(btn => {
-                btn.className = 'category-btn px-6 py-2 rounded-full transition bg-white text-gray-700 hover:bg-emerald-50';
-            });
-            event.target.className = 'category-btn px-6 py-2 rounded-full transition bg-emerald-600 text-white shadow-lg';
-            renderProducts();
-        }
+          function filterByCategory(evt, category) {
+              currentCategory = category;
+              document.querySelectorAll('.category-btn').forEach(btn => {
+                  btn.className = 'category-btn px-6 py-2 rounded-full transition bg-white text-gray-700 hover:bg-emerald-50';
+              });
+              if (evt && evt.currentTarget) {
+                  evt.currentTarget.className = 'category-btn px-6 py-2 rounded-full transition bg-emerald-600 text-white shadow-lg';
+              }
+              renderProducts();
+          }
 
         function filterProducts() { renderProducts(); }
 
@@ -853,8 +892,8 @@
 
         // Initialize
         loadProducts();
-        renderProducts();
         renderCategoryFilters();
+        renderProducts();
     </script>
 
 </body>
