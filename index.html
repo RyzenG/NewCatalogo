@@ -102,6 +102,7 @@
                     <h2 class="text-4xl font-bold text-gray-800 mb-6">Sobre Amazonia Concrete</h2>
                     <p class="text-lg text-gray-600 mb-6">
                         Somos una empresa familiar dedicada a crear piezas únicas de concreto para tu hogar.
+                        Cada producto es hecho a mano con materiales de alta calidad y un diseño sostenible.
                     </p>
                 </div>
             </div>
@@ -118,6 +119,9 @@
                         <a href="mailto:contacto@amazoniaconcrete.com" class="flex items-center justify-center gap-3 bg-white p-4 rounded-lg hover:shadow-lg transition">
                             📧 <span class="font-semibold">contacto@amazoniaconcrete.com</span>
                         </a>
+                        <div class="flex items-center justify-center gap-3 bg-white p-4 rounded-lg">
+                            📍 <span class="font-semibold">Medellín, Antioquia</span>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -237,71 +241,74 @@
     </footer>
 
     <script>
-        // Initial products data
-        let products = [
-            { id: 1, name: 'Maceta Cilíndrica Grande', category: 'macetas', price: 45000, emoji: '🪴', description: 'Perfecta para plantas medianas', size: '25cm alto' },
-            { id: 2, name: 'Maceta Geométrica', category: 'macetas', price: 38000, emoji: '🪴', description: 'Diseño moderno hexagonal', size: '20cm alto' },
-            { id: 3, name: 'Maceta Cuadrada Texturizada', category: 'macetas', price: 42000, emoji: '🪴', description: 'Textura en relieve', size: '22cm x 22cm' },
-            { id: 4, name: 'Maceta Colgante', category: 'macetas', price: 35000, emoji: '🪴', description: 'Con sistema de colgado', size: '18cm diámetro' },
-            { id: 5, name: 'Mini Maceta Suculentas (Set 3)', category: 'mini', price: 25000, emoji: '🌵', description: 'Set de 3 mini macetas', size: '8cm x 8cm c/u' },
-            { id: 6, name: 'Mini Maceta Cilíndrica', category: 'mini', price: 12000, emoji: '🌵', description: 'Ideal para cactus pequeños', size: '10cm alto' },
-            { id: 9, name: 'Porta Velas Cilíndrico', category: 'velas', price: 18000, emoji: '🕯️', description: 'Para velas aromáticas', size: '10cm alto' },
-            { id: 13, name: 'Bandeja Rectangular Grande', category: 'bandejas', price: 55000, emoji: '📦', description: 'Para organizar o servir', size: '40cm x 25cm' },
-            { id: 17, name: 'Jarrón Alto Minimalista', category: 'jarrones', price: 65000, emoji: '🏺', description: 'Para flores largas', size: '35cm alto' },
-            { id: 21, name: 'Escultura Abstracta', category: 'decoracion', price: 75000, emoji: '🗿', description: 'Pieza decorativa única', size: '25cm alto' }
-        ];
+        // State management
+        let state = {
+            products: [
+                { id: 1, name: 'Maceta Cilíndrica Grande', category: 'macetas', price: 45000, emoji: '🪴', description: 'Perfecta para plantas medianas', size: '25cm alto' },
+                { id: 2, name: 'Maceta Geométrica', category: 'macetas', price: 38000, emoji: '🪴', description: 'Diseño moderno hexagonal', size: '20cm alto' },
+                { id: 3, name: 'Maceta Cuadrada Texturizada', category: 'macetas', price: 42000, emoji: '🪴', description: 'Textura en relieve', size: '22cm x 22cm' },
+                { id: 4, name: 'Maceta Colgante', category: 'macetas', price: 35000, emoji: '🪴', description: 'Con sistema de colgado', size: '18cm diámetro' },
+                { id: 5, name: 'Mini Maceta Suculentas (Set 3)', category: 'mini', price: 25000, emoji: '🌵', description: 'Set de 3 mini macetas', size: '8cm x 8cm c/u' },
+                { id: 6, name: 'Mini Maceta Cilíndrica', category: 'mini', price: 12000, emoji: '🌵', description: 'Ideal para cactus pequeños', size: '10cm alto' },
+                { id: 9, name: 'Porta Velas Cilíndrico', category: 'velas', price: 18000, emoji: '🕯️', description: 'Para velas aromáticas', size: '10cm alto' },
+                { id: 13, name: 'Bandeja Rectangular Grande', category: 'bandejas', price: 55000, emoji: '📦', description: 'Para organizar o servir', size: '40cm x 25cm' },
+                { id: 17, name: 'Jarrón Alto Minimalista', category: 'jarrones', price: 65000, emoji: '🏺', description: 'Para flores largas', size: '35cm alto' },
+                { id: 21, name: 'Escultura Abstracta', category: 'decoracion', price: 75000, emoji: '🗿', description: 'Pieza decorativa única', size: '25cm alto' }
+            ],
+            cart: [],
+            currentCategory: 'todos',
+            editingProductId: null
+        };
 
-        let cart = [];
-        let currentCategory = 'todos';
-        let editingProductId = null;
-        let nextId = Math.max(...products.map(p => p.id)) + 1;
+        // Initialize
+        function init() {
+            loadProducts();
+            renderCategoryFilters();
+            renderProducts();
+            document.getElementById('productCount').textContent = state.products.length;
+        }
 
-        // Load products from localStorage
+        // Load products from memory
         function loadProducts() {
-            const saved = localStorage.getItem('amazoniaProducts');
+            const saved = sessionStorage.getItem('amazoniaProducts');
             if (saved) {
                 try {
-                    const parsed = JSON.parse(saved);
-                    if (Array.isArray(parsed)) {
-                        products = parsed;
-                    }
-                } catch (error) {
-                    console.warn('No se pudieron cargar los productos almacenados:', error);
+                    state.products = JSON.parse(saved);
+                } catch (e) {
+                    console.error('Error loading products:', e);
                 }
-            }
-
-            if (!products.length) {
-                nextId = 1;
-            } else {
-                nextId = Math.max(...products.map(p => p.id)) + 1;
             }
         }
 
-        // Save products to localStorage
-        function saveProducts() {
-            localStorage.setItem('amazoniaProducts', JSON.stringify(products));
+        // Save products to memory
+        function saveProductsToStorage() {
+            sessionStorage.setItem('amazoniaProducts', JSON.stringify(state.products));
         }
 
         // Tab switching
         function switchTab(tab) {
-            document.getElementById('catalogoTab').classList.remove('active');
-            document.getElementById('adminTab').classList.remove('active');
-            document.getElementById('btnCatalogo').className = 'bg-emerald-600 text-white px-4 py-2 rounded-full hover:bg-emerald-700 transition';
-            document.getElementById('btnAdmin').className = 'bg-emerald-600 text-white px-4 py-2 rounded-full hover:bg-emerald-700 transition';
+            const catalogoTab = document.getElementById('catalogoTab');
+            const adminTab = document.getElementById('adminTab');
+            const btnCatalogo = document.getElementById('btnCatalogo');
+            const btnAdmin = document.getElementById('btnAdmin');
 
             if (tab === 'catalogo') {
-                document.getElementById('catalogoTab').classList.add('active');
-                document.getElementById('btnCatalogo').className = 'bg-white text-emerald-800 px-4 py-2 rounded-full hover:bg-emerald-50 transition';
+                catalogoTab.classList.add('active');
+                adminTab.classList.remove('active');
+                btnCatalogo.className = 'bg-white text-emerald-800 px-4 py-2 rounded-full hover:bg-emerald-50 transition';
+                btnAdmin.className = 'bg-emerald-600 text-white px-4 py-2 rounded-full hover:bg-emerald-700 transition';
             } else {
-                document.getElementById('adminTab').classList.add('active');
-                document.getElementById('btnAdmin').className = 'bg-white text-emerald-800 px-4 py-2 rounded-full hover:bg-emerald-50 transition';
+                catalogoTab.classList.remove('active');
+                adminTab.classList.add('active');
+                btnCatalogo.className = 'bg-emerald-600 text-white px-4 py-2 rounded-full hover:bg-emerald-700 transition';
+                btnAdmin.className = 'bg-white text-emerald-800 px-4 py-2 rounded-full hover:bg-emerald-50 transition';
                 renderAdminProducts();
             }
         }
 
         // Render category filters
         function renderCategoryFilters() {
-            const categories = ['todos', ...new Set(products.map(p => p.category))];
+            const categories = ['todos', ...new Set(state.products.map(p => p.category))];
             const categoryNames = {
                 'todos': 'Todos',
                 'macetas': 'Macetas',
@@ -312,36 +319,54 @@
                 'decoracion': 'Decoración'
             };
 
-            if (!categories.includes(currentCategory)) {
-                currentCategory = 'todos';
-            }
+            const container = document.getElementById('categoryFilters');
+            container.innerHTML = categories.map(cat => `
+                <button 
+                    data-category="${cat}"
+                    onclick="filterByCategory('${cat}')" 
+                    class="category-btn px-6 py-2 rounded-full transition ${
+                        cat === state.currentCategory ? 'bg-emerald-600 text-white shadow-lg' : 'bg-white text-gray-700 hover:bg-emerald-50'
+                    }">
+                    ${categoryNames[cat] || cat}
+                </button>
+            `).join('');
+        }
 
-            const baseClasses = 'category-btn px-6 py-2 rounded-full transition';
-            document.getElementById('categoryFilters').innerHTML = categories.map(cat => {
-                const isActive = cat === currentCategory;
-                const stateClasses = isActive
-                    ? ' bg-emerald-600 text-white shadow-lg'
-                    : ' bg-white text-gray-700 hover:bg-emerald-50';
+        // Filter by category
+        function filterByCategory(category) {
+            state.currentCategory = category;
+            renderCategoryFilters();
+            renderProducts();
+        }
 
-                return `
-                    <button onclick="filterByCategory(event, '${cat}')" class="${baseClasses}${stateClasses}">
-                        ${categoryNames[cat] || cat}
-                    </button>
-                `;
-            }).join('');
+        // Filter products
+        function filterProducts() {
+            renderProducts();
         }
 
         // Render products in catalog
         function renderProducts() {
             const grid = document.getElementById('productsGrid');
-            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const searchInput = document.getElementById('searchInput');
+            const searchTerm = searchInput ? searchInput.value.toLowerCase() : '';
             
-            const filtered = products.filter(p => {
-                const matchesCategory = currentCategory === 'todos' || p.category === currentCategory;
-                const matchesSearch = p.name.toLowerCase().includes(searchTerm) || 
-                                     p.description.toLowerCase().includes(searchTerm);
+            const filtered = state.products.filter(p => {
+                const matchesCategory = state.currentCategory === 'todos' || p.category === state.currentCategory;
+                const matchesSearch = !searchTerm || 
+                    p.name.toLowerCase().includes(searchTerm) || 
+                    p.description.toLowerCase().includes(searchTerm);
                 return matchesCategory && matchesSearch;
             });
+
+            if (filtered.length === 0) {
+                grid.innerHTML = `
+                    <div class="col-span-full text-center py-16">
+                        <div class="text-6xl mb-4">🔍</div>
+                        <p class="text-xl text-gray-600">No se encontraron productos</p>
+                    </div>
+                `;
+                return;
+            }
 
             grid.innerHTML = filtered.map(product => `
                 <div class="product-card bg-white rounded-2xl shadow-lg hover:shadow-2xl overflow-hidden">
@@ -361,23 +386,25 @@
                     </div>
                 </div>
             `).join('');
-
-            if (filtered.length === 0) {
-                grid.innerHTML = `
-                    <div class="col-span-full text-center py-16">
-                        <div class="text-6xl mb-4">🔍</div>
-                        <p class="text-xl text-gray-600">No se encontraron productos</p>
-                    </div>
-                `;
-            }
         }
 
         // Render admin products list
         function renderAdminProducts() {
             const list = document.getElementById('adminProductsList');
-            document.getElementById('productCount').textContent = products.length;
+            const countElement = document.getElementById('productCount');
             
-            list.innerHTML = products.map(product => `
+            if (countElement) {
+                countElement.textContent = state.products.length;
+            }
+            
+            if (!list) return;
+            
+            if (state.products.length === 0) {
+                list.innerHTML = '<p class="text-center text-gray-500 py-8">No hay productos agregados aún</p>';
+                return;
+            }
+            
+            list.innerHTML = state.products.map(product => `
                 <div class="bg-white p-4 rounded-lg shadow flex items-center justify-between">
                     <div class="flex items-center gap-4">
                         <div class="text-4xl">${product.emoji}</div>
@@ -398,9 +425,9 @@
             `).join('');
         }
 
-        // Show add product form
+        // Product management functions
         function showAddProductForm() {
-            editingProductId = null;
+            state.editingProductId = null;
             document.getElementById('formTitle').textContent = 'Agregar Nuevo Producto';
             document.getElementById('productName').value = '';
             document.getElementById('productCategory').value = 'macetas';
@@ -411,12 +438,11 @@
             document.getElementById('productForm').classList.remove('hidden');
         }
 
-        // Edit product
         function editProduct(id) {
-            const product = products.find(p => p.id === id);
+            const product = state.products.find(p => p.id === id);
             if (!product) return;
 
-            editingProductId = id;
+            state.editingProductId = id;
             document.getElementById('formTitle').textContent = 'Editar Producto';
             document.getElementById('productName').value = product.name;
             document.getElementById('productCategory').value = product.category;
@@ -428,94 +454,88 @@
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
-        // Save product
         function saveProduct() {
             const name = document.getElementById('productName').value.trim();
             const category = document.getElementById('productCategory').value;
-            const price = parseInt(document.getElementById('productPrice').value);
-            const emoji = document.getElementById('productEmoji').value.trim();
+            const price = parseInt(document.getElementById('productPrice').value) || 0;
+            const emoji = document.getElementById('productEmoji').value.trim() || '📦';
             const size = document.getElementById('productSize').value.trim();
             const description = document.getElementById('productDescription').value.trim();
 
-            if (!name || !price || !emoji || !size || !description) {
+            if (!name || !price || !size || !description) {
                 alert('Por favor completa todos los campos');
                 return;
             }
 
-            if (editingProductId) {
-                // Update existing product
-                const index = products.findIndex(p => p.id === editingProductId);
-                products[index] = { ...products[index], name, category, price, emoji, size, description };
+            if (state.editingProductId) {
+                const index = state.products.findIndex(p => p.id === state.editingProductId);
+                if (index !== -1) {
+                    state.products[index] = { 
+                        ...state.products[index], 
+                        name, category, price, emoji, size, description 
+                    };
+                }
             } else {
-                // Add new product
-                products.push({ id: nextId++, name, category, price, emoji, size, description });
+                const newId = state.products.length > 0 
+                    ? Math.max(...state.products.map(p => p.id)) + 1 
+                    : 1;
+                state.products.push({ 
+                    id: newId, 
+                    name, category, price, emoji, size, description 
+                });
             }
 
-            saveProducts();
+            saveProductsToStorage();
             cancelEdit();
             renderAdminProducts();
             renderProducts();
             renderCategoryFilters();
-            alert('Producto guardado exitosamente');
+            alert('✅ Producto guardado exitosamente');
         }
 
-        // Delete product
         function deleteProduct(id) {
             if (confirm('¿Estás seguro de eliminar este producto?')) {
-                products = products.filter(p => p.id !== id);
-                saveProducts();
+                state.products = state.products.filter(p => p.id !== id);
+                saveProductsToStorage();
                 renderAdminProducts();
                 renderProducts();
                 renderCategoryFilters();
+                alert('🗑️ Producto eliminado');
             }
         }
 
-        // Cancel edit
         function cancelEdit() {
-            editingProductId = null;
+            state.editingProductId = null;
             document.getElementById('productForm').classList.add('hidden');
-        }
-
-        // Filter functions
-        function filterByCategory(evt, category) {
-            currentCategory = category;
-            document.querySelectorAll('.category-btn').forEach(btn => {
-                btn.className = 'category-btn px-6 py-2 rounded-full transition bg-white text-gray-700 hover:bg-emerald-50';
-            });
-            if (evt && evt.currentTarget) {
-                evt.currentTarget.className = 'category-btn px-6 py-2 rounded-full transition bg-emerald-600 text-white shadow-lg';
-            }
-            renderProducts();
-        }
-
-        function filterProducts() {
-            renderProducts();
         }
 
         // Cart functions
         function addToCart(productId) {
-            const product = products.find(p => p.id === productId);
-            const existing = cart.find(item => item.id === productId);
+            const product = state.products.find(p => p.id === productId);
+            if (!product) return;
+            
+            const existing = state.cart.find(item => item.id === productId);
             
             if (existing) {
                 existing.quantity++;
             } else {
-                cart.push({ ...product, quantity: 1 });
+                state.cart.push({ ...product, quantity: 1 });
             }
             
             updateCart();
+            alert('✅ Producto agregado al carrito');
         }
 
         function removeFromCart(productId) {
-            cart = cart.filter(item => item.id !== productId);
+            state.cart = state.cart.filter(item => item.id !== productId);
             updateCart();
         }
 
         function updateQuantity(productId, change) {
-            const item = cart.find(i => i.id === productId);
+            const item = state.cart.find(i => i.id === productId);
             if (item) {
-                item.quantity += change;
-                if (item.quantity <= 0) {
+                item.quantity = Math.max(0, item.quantity + change);
+                if (item.quantity === 0) {
                     removeFromCart(productId);
                 } else {
                     updateCart();
@@ -530,18 +550,20 @@
             const cartFooter = document.getElementById('cartFooter');
             const cartTotal = document.getElementById('cartTotal');
 
-            if (cart.length === 0) {
+            const totalItems = state.cart.reduce((sum, item) => sum + item.quantity, 0);
+            
+            if (state.cart.length === 0) {
                 cartCount.classList.add('hidden');
                 cartEmpty.classList.remove('hidden');
                 cartFooter.classList.add('hidden');
                 cartItems.innerHTML = '';
             } else {
                 cartCount.classList.remove('hidden');
-                cartCount.textContent = cart.length;
+                cartCount.textContent = totalItems;
                 cartEmpty.classList.add('hidden');
                 cartFooter.classList.remove('hidden');
 
-                cartItems.innerHTML = cart.map(item => `
+                cartItems.innerHTML = state.cart.map(item => `
                     <div class="flex gap-4 bg-gray-50 p-4 rounded-lg">
                         <div class="text-4xl">${item.emoji}</div>
                         <div class="flex-1">
@@ -557,8 +579,8 @@
                     </div>
                 `).join('');
 
-                const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-                cartTotal.textContent = `$${total.toLocaleString()}`;
+                const total = state.cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+                cartTotal.textContent = `${total.toLocaleString()}`;
             }
         }
 
@@ -574,327 +596,111 @@
         }
 
         function sendWhatsAppOrder() {
-            const message = `¡Hola! Quiero cotizar los siguientes productos:\n\n${cart.map(item => 
-                `• ${item.name} - Cantidad: ${item.quantity} - ${(item.price * item.quantity).toLocaleString()}`
-            ).join('\n')}\n\nTotal: ${cart.reduce((sum, item) => sum + (item.price * item.quantity), 0).toLocaleString()}`;
+            if (state.cart.length === 0) {
+                alert('El carrito está vacío');
+                return;
+            }
             
-            window.open(`https://wa.me/573001234567?text=${encodeURIComponent(message)}`, '_blank');
+            const items = state.cart.map(item => 
+                `• ${item.name}\n  Cantidad: ${item.quantity}\n  Subtotal: ${(item.price * item.quantity).toLocaleString()}`
+            ).join('\n\n');
+            
+            const total = state.cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+            
+            const message = `¡Hola! Me gustaría hacer el siguiente pedido:\n\n${items}\n\n*TOTAL: ${total.toLocaleString()}*\n\n¿Podrían confirmar disponibilidad y tiempo de entrega?`;
+            
+            const phoneNumber = '573001234567'; // Cambiar al número real
+            const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
+            
+            window.open(whatsappUrl, '_blank');
         }
 
-        // Generate HTML Catalog
         function generateCatalogHTML() {
-            const htmlTemplate = `<!DOCTYPE html>
+            const htmlContent = `<!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Amazonia Concrete - Catálogo</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.tailwindcss.com"><\/script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-        .product-card { transition: all 0.3s ease; }
+        body { font-family: 'Segoe UI', sans-serif; }
         .product-card:hover { transform: translateY(-5px); }
-        .cart-sidebar { transition: transform 0.3s ease; }
-        .cart-sidebar.open { transform: translateX(0); }
-        .cart-sidebar.closed { transform: translateX(100%); }
     </style>
 </head>
 <body class="bg-gradient-to-br from-slate-50 to-stone-100">
-
     <header class="bg-gradient-to-r from-emerald-800 to-teal-700 text-white sticky top-0 z-40 shadow-lg">
         <div class="container mx-auto px-4 py-4">
-            <div class="flex items-center justify-between">
-                <div class="flex items-center gap-3">
-                    <div class="text-4xl">🌿</div>
-                    <div>
-                        <h1 class="text-2xl font-bold">Amazonia Concrete</h1>
-                        <p class="text-xs text-emerald-200">Diseño en concreto para tu hogar</p>
-                    </div>
+            <div class="flex items-center gap-3">
+                <div class="text-4xl">🌿</div>
+                <div>
+                    <h1 class="text-2xl font-bold">Amazonia Concrete</h1>
+                    <p class="text-xs text-emerald-200">Diseño en concreto para tu hogar</p>
                 </div>
-                
-                <button onclick="toggleCart()" class="bg-white text-emerald-800 px-4 py-2 rounded-full hover:bg-emerald-50 transition flex items-center gap-2 relative">
-                    🛒 Carrito
-                    <span id="cartCount" class="hidden absolute -top-2 -right-2 bg-red-500 text-white text-xs w-6 h-6 rounded-full flex items-center justify-center">0</span>
-                </button>
             </div>
         </div>
     </header>
 
-    <section class="bg-gradient-to-r from-emerald-700 to-teal-600 text-white py-16">
-        <div class="container mx-auto px-4 text-center">
-            <h2 class="text-4xl md:text-5xl font-bold mb-4">Diseño Sostenible en Concreto</h2>
-            <p class="text-xl text-emerald-100 mb-8">Piezas únicas hechas a mano para transformar tu espacio</p>
-            <div class="flex flex-wrap justify-center gap-4">
-                <div class="bg-white/20 backdrop-blur px-6 py-3 rounded-lg">
-                    <div class="text-3xl font-bold">100%</div>
-                    <div class="text-sm">Artesanal</div>
-                </div>
-                <div class="bg-white/20 backdrop-blur px-6 py-3 rounded-lg">
-                    <div class="text-3xl font-bold">🌱</div>
-                    <div class="text-sm">Eco-Friendly</div>
-                </div>
-                <div class="bg-white/20 backdrop-blur px-6 py-3 rounded-lg">
-                    <div class="text-3xl font-bold">✨</div>
-                    <div class="text-sm">Diseño Único</div>
-                </div>
-            </div>
-        </div>
-    </section>
-
     <section class="container mx-auto px-4 py-8">
-        <div class="mb-6">
-            <div class="relative max-w-md mx-auto mb-6">
-                <input type="text" id="searchInput" placeholder="Buscar productos..." class="w-full px-4 py-3 rounded-full border-2 border-emerald-200 focus:border-emerald-500 focus:outline-none" onkeyup="filterProducts()"/>
-            </div>
-            <div id="categoryFilters" class="flex flex-wrap justify-center gap-3"></div>
-        </div>
-        <div id="productsGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"></div>
-    </section>
-
-    <section class="bg-white py-16">
-        <div class="container mx-auto px-4">
-            <div class="max-w-4xl mx-auto text-center">
-                <h2 class="text-4xl font-bold text-gray-800 mb-6">Sobre Amazonia Concrete</h2>
-                <p class="text-lg text-gray-600 mb-6">Somos una empresa familiar dedicada a crear piezas únicas de concreto para tu hogar. Cada producto es hecho a mano con materiales de alta calidad.</p>
-            </div>
-        </div>
-    </section>
-
-    <section class="bg-gradient-to-br from-emerald-50 to-teal-50 py-16">
-        <div class="container mx-auto px-4">
-            <div class="max-w-2xl mx-auto text-center">
-                <h2 class="text-4xl font-bold text-gray-800 mb-6">Contáctanos</h2>
-                <div class="space-y-4">
-                    <a href="tel:+573001234567" class="flex items-center justify-center gap-3 bg-white p-4 rounded-lg hover:shadow-lg transition">
-                        📞 <span class="font-semibold">+57 300 123 4567</span>
-                    </a>
-                    <a href="mailto:contacto@amazoniaconcrete.com" class="flex items-center justify-center gap-3 bg-white p-4 rounded-lg hover:shadow-lg transition">
-                        📧 <span class="font-semibold">contacto@amazoniaconcrete.com</span>
-                    </a>
-                    <div class="flex items-center justify-center gap-3 bg-white p-4 rounded-lg">
-                        📍 <span class="font-semibold">Medellín, Antioquia</span>
-                    </div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+${state.products.map(p => `            <div class="product-card bg-white rounded-2xl shadow-lg hover:shadow-2xl overflow-hidden transition-all duration-300">
+                <div class="bg-gradient-to-br from-emerald-100 to-teal-50 p-8 flex items-center justify-center h-48">
+                    <div class="text-7xl">${p.emoji}</div>
                 </div>
-            </div>
+                <div class="p-5">
+                    <h3 class="font-bold text-lg mb-2 text-gray-800">${p.name}</h3>
+                    <p class="text-sm text-gray-600 mb-2">${p.description}</p>
+                    <p class="text-xs text-gray-500 mb-3">📏 ${p.size}</p>
+                    <div class="text-2xl font-bold text-emerald-700">${p.price.toLocaleString()}</div>
+                </div>
+            </div>`).join('\n')}
         </div>
     </section>
 
-    <div id="cartSidebar" class="cart-sidebar closed fixed right-0 top-0 h-full w-full max-w-md bg-white shadow-2xl overflow-y-auto z-50">
-        <div class="p-6">
-            <div class="flex items-center justify-between mb-6">
-                <h2 class="text-2xl font-bold text-gray-800">Carrito de Compras</h2>
-                <button onclick="toggleCart()" class="text-3xl">✕</button>
-            </div>
-            <div id="cartItems" class="space-y-4 mb-6"></div>
-            <div id="cartEmpty" class="text-center py-16">
-                <div class="text-6xl mb-4">🛒</div>
-                <p class="text-gray-600">Tu carrito está vacío</p>
-            </div>
-            <div id="cartFooter" class="hidden border-t pt-4">
-                <div class="flex justify-between mb-4">
-                    <span class="text-xl font-bold">Total:</span>
-                    <span id="cartTotal" class="text-2xl font-bold text-emerald-600">$0</span>
-                </div>
-                <button onclick="sendWhatsAppOrder()" class="w-full bg-emerald-600 text-white py-4 rounded-full hover:bg-emerald-700 transition font-semibold text-lg">
-                    Enviar pedido por WhatsApp 💬
-                </button>
+    <section class="bg-gradient-to-br from-emerald-50 to-teal-50 py-16 mt-8">
+        <div class="container mx-auto px-4 text-center">
+            <h2 class="text-3xl font-bold text-gray-800 mb-6">Contáctanos</h2>
+            <div class="space-y-4 max-w-md mx-auto">
+                <a href="tel:+573001234567" class="flex items-center justify-center gap-3 bg-white p-4 rounded-lg hover:shadow-lg transition">
+                    📞 <span class="font-semibold">+57 300 123 4567</span>
+                </a>
+                <a href="https://wa.me/573001234567?text=Hola,%20me%20interesa%20conocer%20más%20sobre%20sus%20productos" class="flex items-center justify-center gap-3 bg-emerald-600 text-white p-4 rounded-lg hover:bg-emerald-700 transition">
+                    💬 <span class="font-semibold">WhatsApp</span>
+                </a>
             </div>
         </div>
-    </div>
+    </section>
 
     <footer class="bg-gradient-to-r from-emerald-900 to-teal-800 text-white py-8">
         <div class="container mx-auto px-4 text-center">
-            <p class="mb-2">&copy; 2025 Amazonia Concrete - Todos los derechos reservados</p>
-            <p class="text-sm text-emerald-200">Hecho con 💚 en Medellín, Colombia</p>
+            <p>&copy; 2025 Amazonia Concrete - Medellín, Colombia</p>
         </div>
     </footer>
-
-    <script>
-        const products = ${JSON.stringify(products)};
-        let cart = [];
-        let currentCategory = 'todos';
-
-          function renderCategoryFilters() {
-              const categories = ['todos', ...new Set(products.map(p => p.category))];
-              const categoryNames = {
-                  'todos': 'Todos',
-                  'macetas': 'Macetas',
-                  'mini': 'Mini Macetas',
-                  'velas': 'Porta Velas',
-                  'bandejas': 'Bandejas',
-                  'jarrones': 'Jarrones',
-                  'decoracion': 'Decoración'
-              };
-
-              if (!categories.includes(currentCategory)) {
-                  currentCategory = 'todos';
-              }
-
-              const baseClasses = 'category-btn px-6 py-2 rounded-full transition';
-              document.getElementById('categoryFilters').innerHTML = categories.map(cat => {
-                  const isActive = cat === currentCategory;
-                  const stateClasses = isActive
-                      ? ' bg-emerald-600 text-white shadow-lg'
-                      : ' bg-white text-gray-700 hover:bg-emerald-50';
-
-                  return \`
-                      <button onclick="filterByCategory(event, '\${cat}')" class="\${baseClasses}\${stateClasses}">
-                          \${categoryNames[cat] || cat}
-                      </button>
-                  \`;
-              }).join('');
-          }
-
-        function renderProducts() {
-            const grid = document.getElementById('productsGrid');
-            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
-            const filtered = products.filter(p => {
-                const matchesCategory = currentCategory === 'todos' || p.category === currentCategory;
-                const matchesSearch = p.name.toLowerCase().includes(searchTerm) || p.description.toLowerCase().includes(searchTerm);
-                return matchesCategory && matchesSearch;
-            });
-
-            grid.innerHTML = filtered.map(product => \`
-                <div class="product-card bg-white rounded-2xl shadow-lg hover:shadow-2xl overflow-hidden">
-                    <div class="bg-gradient-to-br from-emerald-100 to-teal-50 p-8 flex items-center justify-center h-48">
-                        <div class="text-7xl">\${product.emoji}</div>
-                    </div>
-                    <div class="p-5">
-                        <h3 class="font-bold text-lg mb-2 text-gray-800">\${product.name}</h3>
-                        <p class="text-sm text-gray-600 mb-2">\${product.description}</p>
-                        <p class="text-xs text-gray-500 mb-3">📏 \${product.size}</p>
-                        <div class="flex items-center justify-between">
-                            <span class="text-2xl font-bold text-emerald-700">$\${product.price.toLocaleString()}</span>
-                            <button onclick="addToCart(\${product.id})" class="bg-emerald-600 text-white px-4 py-2 rounded-full hover:bg-emerald-700 transition">
-                                Agregar
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            \`).join('');
-
-            if (filtered.length === 0) {
-                grid.innerHTML = \`<div class="col-span-full text-center py-16"><div class="text-6xl mb-4">🔍</div><p class="text-xl text-gray-600">No se encontraron productos</p></div>\`;
-            }
-        }
-
-          function filterByCategory(evt, category) {
-              currentCategory = category;
-              document.querySelectorAll('.category-btn').forEach(btn => {
-                  btn.className = 'category-btn px-6 py-2 rounded-full transition bg-white text-gray-700 hover:bg-emerald-50';
-              });
-              if (evt && evt.currentTarget) {
-                  evt.currentTarget.className = 'category-btn px-6 py-2 rounded-full transition bg-emerald-600 text-white shadow-lg';
-              }
-              renderProducts();
-          }
-
-        function filterProducts() { renderProducts(); }
-
-        function addToCart(productId) {
-            const product = products.find(p => p.id === productId);
-            const existing = cart.find(item => item.id === productId);
-            if (existing) { existing.quantity++; } 
-            else { cart.push({ ...product, quantity: 1 }); }
-            updateCart();
-        }
-
-        function removeFromCart(productId) {
-            cart = cart.filter(item => item.id !== productId);
-            updateCart();
-        }
-
-        function updateQuantity(productId, change) {
-            const item = cart.find(i => i.id === productId);
-            if (item) {
-                item.quantity += change;
-                if (item.quantity <= 0) { removeFromCart(productId); }
-                else { updateCart(); }
-            }
-        }
-
-        function updateCart() {
-            const cartCount = document.getElementById('cartCount');
-            const cartItems = document.getElementById('cartItems');
-            const cartEmpty = document.getElementById('cartEmpty');
-            const cartFooter = document.getElementById('cartFooter');
-            const cartTotal = document.getElementById('cartTotal');
-
-            if (cart.length === 0) {
-                cartCount.classList.add('hidden');
-                cartEmpty.classList.remove('hidden');
-                cartFooter.classList.add('hidden');
-                cartItems.innerHTML = '';
-            } else {
-                cartCount.classList.remove('hidden');
-                cartCount.textContent = cart.length;
-                cartEmpty.classList.add('hidden');
-                cartFooter.classList.remove('hidden');
-
-                cartItems.innerHTML = cart.map(item => \`
-                    <div class="flex gap-4 bg-gray-50 p-4 rounded-lg">
-                        <div class="text-4xl">\${item.emoji}</div>
-                        <div class="flex-1">
-                            <h3 class="font-semibold text-sm mb-1">\${item.name}</h3>
-                            <p class="text-emerald-600 font-bold">$\${item.price.toLocaleString()}</p>
-                            <div class="flex items-center gap-2 mt-2">
-                                <button onclick="updateQuantity(\${item.id}, -1)" class="bg-gray-200 w-8 h-8 rounded-full hover:bg-gray-300">-</button>
-                                <span class="w-8 text-center font-semibold">\${item.quantity}</span>
-                                <button onclick="updateQuantity(\${item.id}, 1)" class="bg-gray-200 w-8 h-8 rounded-full hover:bg-gray-300">+</button>
-                                <button onclick="removeFromCart(\${item.id})" class="ml-auto text-red-500 hover:text-red-700 text-xl">✕</button>
-                            </div>
-                        </div>
-                    </div>
-                \`).join('');
-
-                const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-                cartTotal.textContent = \`$\${total.toLocaleString()}\`;
-            }
-        }
-
-        function toggleCart() {
-            const sidebar = document.getElementById('cartSidebar');
-            if (sidebar.classList.contains('closed')) {
-                sidebar.classList.remove('closed');
-                sidebar.classList.add('open');
-            } else {
-                sidebar.classList.remove('open');
-                sidebar.classList.add('closed');
-            }
-        }
-
-        function sendWhatsAppOrder() {
-            const message = \`¡Hola! Quiero cotizar los siguientes productos:\\n\\n\${cart.map(item => 
-                \`• \${item.name} - Cantidad: \${item.quantity} - $\${(item.price * item.quantity).toLocaleString()}\`
-            ).join('\\n')}\\n\\nTotal: $\${cart.reduce((sum, item) => sum + (item.price * item.quantity), 0).toLocaleString()}\`;
-            window.open(\`https://wa.me/573001234567?text=\${encodeURIComponent(message)}\`, '_blank');
-        }
-
-        renderCategoryFilters();
-        renderProducts();
-    <\/script>
 </body>
 </html>`;
 
-            const blob = new Blob([htmlTemplate], { type: 'text/html' });
+            // Crear y descargar el archivo
+            const blob = new Blob([htmlContent], { type: 'text/html;charset=utf-8' });
             const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = 'catalogo-amazonia-concrete.html';
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `catalogo-amazonia-${new Date().toISOString().split('T')[0]}.html`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
             URL.revokeObjectURL(url);
             
-            alert('✅ Catálogo HTML descargado exitosamente!\n\nAhora puedes:\n• Abrirlo en cualquier navegador\n• Subirlo a tu sitio web\n• Compartirlo con tus clientes');
+            alert('✅ Catálogo descargado exitosamente!\n\nEl archivo HTML contiene todos tus productos actuales y puede ser abierto en cualquier navegador.');
         }
 
-        // Initialize
-        loadProducts();
-        renderCategoryFilters();
-        renderProducts();
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', init);
+        
+        // Also initialize immediately in case DOM is already loaded
+        if (document.readyState === 'interactive' || document.readyState === 'complete') {
+            init();
+        }
     </script>
-
 </body>
 </html>
